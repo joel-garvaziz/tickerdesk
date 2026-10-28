@@ -1,95 +1,123 @@
-# TickerDesk — Editorial Workspace
+# TickerDesk
 
-Turns press releases into English, Malayalam, or paired bilingual broadcast tickers of at most 10 whitespace-separated words, with editor review, a continuous right-to-left broadcast bar, and JSON export. The frontend is plain HTML/CSS/JavaScript; the optional Flask backend uses the OpenAI API for language-aware drafting and validation.
+**AI-powered bilingual news ticker generation with editorial review and live broadcasting.**
 
-## Run
-Start the Flask app with `python server.py` and open **http://127.0.0.1:5000**. Set `OPENAI_API_KEY` on the server to enable AI drafting. The interface remains usable without the API, but translations that cannot be safely extracted from the source must be written by an editor.
-Tests: `node tests/run-tests.js` and `.venv\Scripts\python.exe -m unittest discover -s tests`.
+TickerDesk is an editorial workspace that converts announcements and news updates into concise, broadcast-ready tickers in **English and Malayalam**. It combines AI-assisted generation with editor review, priority labels, and a continuously scrolling news ticker.
 
-## Use
-1. Select English, മലയാളം (Malayalam), or Both (English + Malayalam), then paste one announcement, paste several separated by a blank line, or import UTF-8 TXT/JSON.
-2. Both creates two independently editable, reviewable, approvable ticker records associated with the same source ID. Preview, reject, priority, reorder, and delete work per ticker version.
-3. Approved tickers scroll continuously right-to-left with their priority label: BREAKING NEWS, JUST IN, or LATEST. Pause/Resume and hover pause are available. Reduced-motion preferences show a static, wrapped ticker.
-4. "Export Approved" downloads only approved, valid ticker records as UTF-8 JSON.
+## Features
 
-## Faithfulness and limits
-- AI-generated tickers are server-validated for the 10-word limit, unsupported numbers, and exact source evidence; flagged or translated text still requires editor review.
-- English fallback is extractive. Malayalam fallback only reuses Malayalam wording already in the source; it never invents a translation. When a safe fallback is unavailable, the empty language version is flagged for manual editing and cannot be approved.
-- Heuristic warnings are not proof: editors should verify names, dates, figures, claims, allegations, and translation faithfulness against the original.
-- The word limit counts whitespace-separated tokens containing at least one Unicode letter or digit. Over-limit text cannot be approved or exported.
+- **AI-powered ticker generation** using the OpenAI API.
+- **English and Malayalam support** for bilingual news tickers.
+- **Editorial review** so users can review and edit tickers before broadcasting.
+- **Concise headlines** designed for broadcast, with a maximum of 10 words where applicable.
+- **Priority labels** to help organize important news.
+- **Continuous scrolling ticker** that moves headlines from right to left.
+- **Rule-based fallback** when AI generation is unavailable.
+- **JSON export** for saving generated ticker data.
+- **Automated tests** for core application behavior.
 
-## Export schema
-`{application, version, tickers:[{id, source_id, source_text, ticker_text, word_count, status, priority, position, language}]}`
+## Tech Stack
 
-The `language` field is `en` or `ml`. All previous fields and their meanings are preserved; English-only integrations can treat a missing `language` field in older exports as `en`. Bilingual pairs share a `source_id` and are separate records so their review statuses remain independent.
+- HTML, CSS, JavaScript
+- Python and Flask
+- OpenAI API
+- Python `dotenv` for environment-variable management
+- JavaScript and Python testing tools
 
-## Known limitations
-No persistence across reloads, move buttons instead of drag-and-drop, and semantic translation accuracy cannot be proven automatically. Malayalam rendering depends on a Malayalam-capable system font; the CSS prefers Noto Sans Malayalam when installed.
+## Prerequisites
 
+- Python 3.10 or later
+- An OpenAI API key
+- Git (optional, for version control)
 
-## Run with the OpenAI API ticker backend
+## Installation
 
-The project now includes an optional Flask backend. The browser calls `POST /api/generate`;
-OpenAI generates a ticker and the server validates its length, numbers, and exact evidence
-quotes. If the AI call fails, the UI uses the source-based fallback where possible and flags manual translation when a safe Malayalam version is unavailable.
+1. Clone the repository:
 
-### 1. Install Python dependencies
+   ```bash
+   git clone https://github.com/joel-garvaziz/tickerdesk.git
+   cd tickerdesk
+   ```
 
-```bash
-python -m venv .venv
+2. Create and activate a virtual environment:
+
+   **Windows PowerShell**
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3. Install the dependencies:
+
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+4. Create a `.env` file in the project root and add your API key:
+
+   ```env
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+   Replace the placeholder with your actual API key. Never commit your `.env` file or expose your API key in frontend JavaScript.
+
+5. Start the application:
+
+   ```powershell
+   python server.py
+   ```
+
+6. Open the local URL displayed in the terminal in your browser.
+
+## Usage
+
+1. Enter or import a news announcement.
+2. Choose the desired output language: English, Malayalam, or both, if available in your version.
+3. Generate a concise ticker.
+4. Review and edit the generated headline.
+5. Assign a priority where needed.
+6. Display approved headlines in the scrolling ticker.
+7. Export the ticker data as JSON.
+
+## Project Structure
+
+```text
+tickerdesk/
+├── index.html
+├── server.py
+├── requirements.txt
+├── .env                 # Local API key; do not commit
+├── .gitignore
+├── README.md
+├── samples/
+│   ├── announcements.json
+│   └── announcements.txt
+└── tests/
+    ├── run-tests.js
+    └── test_server.py
 ```
 
-Windows PowerShell:
+## Testing
+
+Run the Python tests:
+
 ```powershell
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m unittest discover -s tests
 ```
 
-Windows Command Prompt:
-```bat
-.venv\Scripts\activate.bat
-pip install -r requirements.txt
-```
+Run the JavaScript tests using Node.js:
 
-macOS/Linux:
-```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 2. Set your OpenAI API key
-
-Windows PowerShell (current terminal only):
 ```powershell
-$env:OPENAI_API_KEY="your-real-openai-api-key"
+node tests/run-tests.js
 ```
 
-Windows Command Prompt:
-```bat
-set OPENAI_API_KEY=your-real-openai-api-key
-```
+## Security
 
-macOS/Linux:
-```bash
-export OPENAI_API_KEY="your-real-openai-api-key"
-```
+- Keep API keys in environment variables or a local `.env` file.
+- Ensure `.env` is listed in `.gitignore`.
+- Never put secret keys in `index.html` or other frontend files.
+- If an API key is accidentally pushed to GitHub, revoke it and generate a new one.
 
-Optional: set `OPENAI_MODEL` to a model available to your OpenAI account. The default in `server.py` is `gpt-4.1-mini`.
+## License
 
-**Do not put the API key in `index.html`, JavaScript, or a committed `.env` file.**
-The key must remain on the server. Do not share it or commit it to Git.
-
-### 3. Start the app
-
-```bash
-python server.py
-```
-
-Open **http://127.0.0.1:5000** in your browser. Do not open `index.html` directly
-as a `file://` URL, because API requests need to go through Flask.
-
-### Notes
-
-- AI-generated tickers still require editorial review.
-- The validator is a basic safeguard, not a guarantee of factual accuracy.
-- The API key must have access to the selected OpenAI model.
+No license has been specified yet.
